@@ -1,12 +1,33 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import ImageUploader from 'react-images-upload';
 
 export default class App extends Component {
 
   state = {
-    selectedFiles: {},
-    progress: 0
+    pictures: [],
+    progress: 0,
+    message: '',
+    warning: false
   };
+
+  onDrop = (pictures) => {
+    console.log(pictures);
+    if(pictures.length > 3) {
+      this.setState({
+        pictures: [],
+        message: 'Warning: You can only upload up to 3 pictures!',
+        warning: true
+      });
+    }
+    else {
+      this.setState({
+        pictures: pictures,
+        message: '',
+        warning: false
+      });
+    }
+  }
 
   handleSelectedFile = (event) => {
     this._handleSelectedFile(event.target.name, event.target.files[0]);
@@ -20,21 +41,24 @@ export default class App extends Component {
       console.log(this.state.selectedFiles);
     });
     this.setState({
-      progress: 0
+      progress: 0,
+      message: ''
+    }, () => {
+      console.log('reset to 0');
     });
   }
 
   handleUpload = () => {
+    if(this.state.pictures.length === 0) return;
+
     const data = new FormData();
-    for(const entry in this.state.selectedFiles) {
-      if(this.state.selectedFiles.hasOwnProperty(entry)) {
-        console.log(entry, this.state.selectedFiles[entry]);
-        data.append(
-          entry,
-          this.state.selectedFiles[entry],
-          this.state.selectedFiles[entry].name
-        );
-      }
+    for(let i = 0;i < this.state.pictures.length;i++) {
+      console.log(i, this.state.pictures[i]);
+      data.append(
+        `img${i + 1}`,
+        this.state.pictures[i],
+        this.state.pictures[i].name
+      );
     }
 
     axios.post(
@@ -43,7 +67,13 @@ export default class App extends Component {
       {
         onUploadProgress: ProgressEvent => {
           this.setState({
-            loaded: (ProgressEvent.loaded / ProgressEvent.total) * 100,
+            progress: Math.round((ProgressEvent.loaded / ProgressEvent.total) * 100),
+          }, () => {
+            if(this.state.progress === 100) {
+              this.setState({
+                message: 'Upload Completed!'
+              });
+            }
           })
         },
       }
@@ -55,12 +85,36 @@ export default class App extends Component {
 
   render() {
     return (
-      <div className="App">
-          <input type="file" name="img1" onChange={ this.handleSelectedFile }/>
-          <input type="file" name="img2" onChange={ this.handleSelectedFile }/>
-          <input type="file" name="img3" onChange={ this.handleSelectedFile }/>
-          <input type='submit' value='Upload' onClick={ this.handleUpload }/>
-        <div>{ this.state.progress }</div>
+      <div>
+
+        <nav>
+          <div className="nav-wrapper">
+            <a href="#" className="brand-logo">Upload Pictures</a>
+          </div>
+        </nav>
+
+        <div style={{ textAlign: 'center' }}>
+
+          <ImageUploader
+            withIcon={true}
+            withPreview={true}
+            buttonText='Choose images'
+            onChange={this.onDrop}
+            imgExtension={['.jpg', '.gif', '.png', '.gif']}
+            maxFileSize={5242880}
+            buttonStyles={{ backgroundColor: '#2bbbad' }}
+          />
+
+          <button class="btn waves-effect waves-light" type="submit" name="action" onClick={ this.handleUpload }>
+            Upload
+          </button>
+
+          <h2>{ this.state.progress }%</h2>
+          <h2 style={ this.state.warning ? { color: 'red' } : { color: 'black' }}>
+            { this.state.message }
+          </h2>
+
+        </div>
       </div>
     );
   }
