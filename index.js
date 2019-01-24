@@ -16,10 +16,6 @@ mongoose.connect(keys.mongoDBURI)
 
 app.use(fileUpload());
 
-app.get('/', (req, res) => {
-  res.send('index page');
-});
-
 const storeFileToDatabase = (filePaths) => {
   for(let i = 0;i < filePaths.length;i++) {
     const filename = path.basename(filePaths[i]);
