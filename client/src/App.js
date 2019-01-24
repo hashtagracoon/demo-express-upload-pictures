@@ -1,51 +1,30 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import ImageUploader from 'react-images-upload';
+import Materialize from 'materialize-css';
 
 export default class App extends Component {
 
   state = {
     pictures: [],
-    progress: 0,
-    message: '',
-    warning: false
+    progress: 0
   };
 
   onDrop = (pictures) => {
     console.log(pictures);
     if(pictures.length > 3) {
+      Materialize.toast({html: 'Warning: You can only upload up to 3 pictures!'});
       this.setState({
         pictures: [],
-        message: 'Warning: You can only upload up to 3 pictures!',
-        warning: true
+        progress: 0
       });
     }
     else {
       this.setState({
         pictures: pictures,
-        message: '',
-        warning: false
+        progress: 0
       });
     }
-  }
-
-  handleSelectedFile = (event) => {
-    this._handleSelectedFile(event.target.name, event.target.files[0]);
-  }
-
-  _handleSelectedFile = (entry, file) => {
-    console.log(entry, file);
-    let selectedFiles = { ...this.state.selectedFiles };
-    selectedFiles[entry] = file;
-    this.setState({ selectedFiles }, () => {
-      console.log(this.state.selectedFiles);
-    });
-    this.setState({
-      progress: 0,
-      message: ''
-    }, () => {
-      console.log('reset to 0');
-    });
   }
 
   handleUpload = () => {
@@ -70,9 +49,7 @@ export default class App extends Component {
             progress: Math.round((ProgressEvent.loaded / ProgressEvent.total) * 100),
           }, () => {
             if(this.state.progress === 100) {
-              this.setState({
-                message: 'Upload Completed!'
-              });
+              Materialize.toast({html: 'Upload Completed!'});
             }
           })
         },
@@ -110,9 +87,6 @@ export default class App extends Component {
           </button>
 
           <h2>{ this.state.progress }%</h2>
-          <h2 style={ this.state.warning ? { color: 'red' } : { color: 'black' }}>
-            { this.state.message }
-          </h2>
 
         </div>
       </div>
