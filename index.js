@@ -33,7 +33,9 @@ const moveFileToTempFolder = (fileObj) => {
 app.post('/upload', (req, res, next) => {
   let promises = [];
   for(let i = 0;i < 3 ;i++) {
-    console.log(req.files[`img${i + 1}`].name);
+    if(req.files[`img${i + 1}`]) {
+      console.log(req.files[`img${i + 1}`].name);
+    }
     promises[i] = moveFileToTempFolder(req.files[`img${i + 1}`]);
   }
   Promise.all([promises[0], promises[1], promises[2]])
